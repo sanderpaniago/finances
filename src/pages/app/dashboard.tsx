@@ -1,4 +1,5 @@
 import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
+import { useSession } from "next-auth/client";
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from "react";
 import { Header } from "../../components/Header";
@@ -6,12 +7,12 @@ import { Sidebar } from "../../components/Sidebar";
 import { useChart } from "../../services/hooks/useChart";
 import { theme } from '../../styles/theme'
 
-const Chart = dynamic(()=> import('react-apexcharts'), {
+const Chart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
 })
 
 const options = {
-    chart:{
+    chart: {
         toolbar: {
             show: false,
         },
@@ -43,10 +44,10 @@ const options = {
 
 
 export default function Dashboard() {
-
-    const {data, isLoading} = useChart()
+    const [session] = useSession()
+    const { data, isLoading } = useChart(session?.idDatabase)
     const [categories, setCategories] = useState({})
-    useEffect( ()=> {
+    useEffect(() => {
 
         if (data) {
             const category = Object.keys(data)
@@ -71,7 +72,7 @@ export default function Dashboard() {
 
                 <SimpleGrid flex='1' gap='4' minChildWidth='320px'>
                     <Box
-                        p={['6','8']}
+                        p={['6', '8']}
                         bg='gray.800'
                         borderRadius={8}
                         pb='4'
@@ -97,7 +98,7 @@ export default function Dashboard() {
                         )}
                     </Box>
                     <Box
-                        p={['6','8']}
+                        p={['6', '8']}
                         bg='gray.800'
                         borderRadius={8}
                         pb='4'
@@ -122,7 +123,7 @@ export default function Dashboard() {
                             }]} />
                         )}
                     </Box>
-                    
+
                 </SimpleGrid>
             </Flex>
         </Flex>

@@ -2,8 +2,10 @@ import {NextApiRequest, NextApiResponse} from 'next'
 import { notion } from '../../../services/notion'
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+    const idDatabase = req.query.idDatabase as string
     if (req.method === 'GET') {
         const { currentMouth, currentYear} = req.query
+
         const after = req.query.after as string
         if (currentMouth && currentYear) {
             const daysMouth = new Date(Number(currentYear), Number(currentMouth), 0 ).getDate()
@@ -13,9 +15,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 : '01'}-${currentMouth ? currentMouth : '01'}-01`
 
             const endFilter = `${currentYear}-${currentMouth}-${daysMouth}`
-
             const response = await notion.databases.query({
-                database_id: process.env.NOTION_DATABASE_ID,
+                database_id: idDatabase,
                 page_size: 6,
                 start_cursor: after,
                 filter: {
@@ -41,7 +42,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         }
 
         const response = await notion.databases.query({
-            database_id: process.env.NOTION_DATABASE_ID,
+            database_id: idDatabase,
             page_size: 6,
             start_cursor: after,
         })
@@ -56,7 +57,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         console.log({dueDate, price, title, category})
         const response = await notion.pages.create({
             parent: {
-                database_id: process.env.NOTION_DATABASE_ID,
+                database_id: idDatabase,
             },
             properties: {
                 pay: {

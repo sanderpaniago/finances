@@ -25,15 +25,16 @@ import { useResumer } from "../../../services/hooks/useResumer";
 import { formatter, formatterDate } from "../../../utils/formatted";
 import { Summary } from "../../../components/Sumarry";
 import { queryClient } from '../../../services/querryClient'
+import { useSession } from "next-auth/client";
 
 export default function Transactions() {
+    const [session] = useSession()
 
-    
     const [filters, setFilter] = useState({
         currentYear: '',
         currentMouth: ''
     });
-    
+
     const isWideVersion = useBreakpointValue({
         base: false,
         lg: true,
@@ -45,6 +46,7 @@ export default function Transactions() {
                 after: pageParam,
                 currentYear: filters.currentYear,
                 currentMouth: filters.currentMouth,
+                idDatabase: session.idDatabase
             },
         });
         return response.data;
@@ -66,7 +68,7 @@ export default function Transactions() {
         }
     });
 
-    const resumer = useResumer(filters);
+    const resumer = useResumer(filters, session?.idDatabase);
 
     const togglePay = useTogglePay()
 
@@ -74,7 +76,7 @@ export default function Transactions() {
         fetchNextPage();
     }
 
-    async function handleSetFilter(filter: string){
+    async function handleSetFilter(filter: string) {
 
         let currentMouth;
         const month = new Date().getMonth()
@@ -132,7 +134,7 @@ export default function Transactions() {
 
                 <Box flex='1'>
                     {resumer.data && (
-                        <Summary resumer={resumer.data.totalValue} isLoading={resumer.isFetching}/>
+                        <Summary resumer={resumer.data.totalValue} isLoading={resumer.isFetching} />
                     )}
 
                     <Box flex="1" borderRadius={8} bg="gray.800" p="8">
@@ -143,7 +145,7 @@ export default function Transactions() {
                                     <Spinner size="sm" color="gray.500" ml="4" />
                                 ) : isFetching ? (
                                     <Spinner size="sm" color="gray.500" ml="4" />
-                                ): ''}
+                                ) : ''}
                             </Heading>
                             <NextLink href="/app/transactions/create">
                                 <Button
@@ -177,34 +179,34 @@ export default function Transactions() {
                                         {isWideVersion && (
                                             <Box w='20%'>
                                                 <Menu colorScheme='blackAlpha'>
-                                                    <MenuButton 
-                                                        as={Button} 
+                                                    <MenuButton
+                                                        as={Button}
                                                         rightIcon={<Icon as={RiArrowDownSLine} />}
                                                         p='0'
                                                         colorScheme='transparent'
-                                                        _focus={{outline: 'none'}}
-                                                        
+                                                        _focus={{ outline: 'none' }}
+
                                                     >
                                                         Vencimento
                                                     </MenuButton>
-                                                    <MenuList 
+                                                    <MenuList
                                                         zIndex='2'
                                                         bg='gray.800'
                                                         borderColor='gray.700'
                                                     >
-                                                        <MenuItem 
-                                                            _hover={{bg: 'gray.900'}}
-                                                            _focus={{bg: 'gray.900'}}
+                                                        <MenuItem
+                                                            _hover={{ bg: 'gray.900' }}
+                                                            _focus={{ bg: 'gray.900' }}
                                                             onClick={() => handleSetFilter('actual')}
                                                         >Mês atual</MenuItem>
-                                                        <MenuItem 
-                                                            _hover={{bg: 'gray.900'}}
-                                                            _focus={{bg: 'gray.900'}}
+                                                        <MenuItem
+                                                            _hover={{ bg: 'gray.900' }}
+                                                            _focus={{ bg: 'gray.900' }}
                                                             onClick={() => handleSetFilter('before')}
                                                         >Mês passado</MenuItem>
-                                                        <MenuItem 
-                                                            _hover={{bg: 'gray.900'}}
-                                                            _focus={{bg: 'gray.900'}}
+                                                        <MenuItem
+                                                            _hover={{ bg: 'gray.900' }}
+                                                            _focus={{ bg: 'gray.900' }}
                                                             onClick={() => handleSetFilter('after')}
                                                         >Proximo mês</MenuItem>
                                                     </MenuList>
@@ -217,15 +219,15 @@ export default function Transactions() {
                                     </HStack>
                                     <Box maxHeight="45vh" overflowY='scroll'>
 
-                                    {formatTransactions.map((transaction) => (
-                                        <TableItem
-                                        key={transaction.id}
-                                        isWideVersion={isWideVersion}
-                                        item={transaction}
-                                        onTogglePay={togglePay.mutateAsync}
-                                        />
+                                        {formatTransactions.map((transaction) => (
+                                            <TableItem
+                                                key={transaction.id}
+                                                isWideVersion={isWideVersion}
+                                                item={transaction}
+                                                onTogglePay={togglePay.mutateAsync}
+                                            />
                                         ))}
-                                        </Box>
+                                    </Box>
                                 </Box>
                                 {hasNextPage && (
                                     <Button

@@ -64,9 +64,10 @@ export default async function handle(
         const startFilter = initialFilter(currentYear, currentMonth);
         const endFilter = finalyFilter(currentYear, currentMonth);
 
+        const idDatabase = req.query.idDatabase as string
 
         const response = await notion.databases.query({
-            database_id: process.env.NOTION_DATABASE_ID,
+            database_id: idDatabase,
             filter: {
                 and: [
                     {

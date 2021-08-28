@@ -11,4 +11,68 @@ export default NextAuth({
             scope: 'read:user'
         }),
     ],
+    callbacks: {
+        async session(session) {
+            try {
+                const idDatabaseNotion = await fauna.query(
+                    q.Get(
+                        q.Match(
+                            q.Index('user_by_email'),
+                            q.Casefold(session.user.email)
+                        )
+                    )
+                )
+                console.log(idDatabaseNotion)
+                if (idDatabaseNotion.data.idDatabase) {
+                    return {
+                        ...session,
+                        idDatabase: idDatabaseNotion.data.idDatabase
+                    }
+                }
+                return {
+                    ...session,
+                    idDatabase: null
+                }
+            } catch {
+                return {
+                    ...session,
+                    idDatabase: null
+                }
+            }
+        },
+        async signIn(user, account, profile) {
+            const { email } = user
+
+            try {
+                await fauna.query(
+                    q.If(
+                        q.Not(
+                            q.Exists(
+                                q.Match(
+                                    q.Index('user_by_email'),
+                                    q.Casefold(email)
+                                )
+                            )
+                        ),
+                        q.Create(
+                            q.Collection('user'),
+                            {data: { email }}
+                        ),
+                        q.Get(
+                            q.Match(
+                                q.Match(
+                                    q.Index('user_by_email'),
+                                    q.Casefold(email)
+                                )
+                            )
+                        )
+                    )
+                )
+
+                return true
+            } catch {
+                return false
+            }
+        }
+    }
 });

@@ -3,7 +3,7 @@ import { notion } from '../../services/notion'
 import { calcTotalValues } from '../api/_lib/calculationValues'
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-
+    const idDatabase = req.query.idDatabase as string
     if (req.method === 'GET') {
         const {currentMouth, currentYear} = req.query
         
@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             const endFilter = `${currentYear}-${currentMouth}-${daysMouth}`
 
             const response = await notion.databases.query({
-                database_id: process.env.NOTION_DATABASE_ID,
+                database_id: idDatabase,
                 filter: {
                     and: [
                         {
@@ -43,7 +43,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         }
 
         const response = await notion.databases.query({
-            database_id: process.env.NOTION_DATABASE_ID
+            database_id: idDatabase
         })
 
         const totalValue = calcTotalValues(response)

@@ -6,16 +6,17 @@ type FilterData = {
     currentMouth: string;
 }
 
-async function getResumer({currentYear, currentMouth}: FilterData) {
+async function getResumer({currentYear, currentMouth}: FilterData, idDatabase: string) {
     const response = await api.get('api/resume', {
         params: { 
             currentYear,
             currentMouth,
+            idDatabase,
         }
     })
     return response.data
 }
 
-export function useResumer(filter: FilterData){
-    return useQuery(['resumer'], () => getResumer(filter));
+export function useResumer(filter: FilterData, idDatabase: string){
+    return useQuery(['resumer'], () => getResumer(filter, idDatabase));
 }
