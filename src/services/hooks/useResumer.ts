@@ -7,7 +7,7 @@ type FilterData = {
 }
 
 async function getResumer({currentYear, currentMouth}: FilterData, idDatabase: string) {
-    const response = await api.get('api/resume', {
+    const response = await api.get('/api/resume', {
         params: { 
             currentYear,
             currentMouth,
