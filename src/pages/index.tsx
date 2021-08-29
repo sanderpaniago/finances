@@ -4,8 +4,6 @@ import { getSession, signIn, useSession } from 'next-auth/client'
 import { RiGithubFill} from 'react-icons/ri'
 export default function Home() {
 
-  const [session] = useSession()
-
   return (
     <Flex w="100vw" h="100vh" alignItems="center" justifyContent="center">
       <Flex
@@ -43,14 +41,24 @@ export default function Home() {
 export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const session = await getSession({ req });
 
-  // if(session?.user) {
-  //   return {
-  //     redirect: {
-  //       destination: '/app/dashboard',
-  //       permanent: false,
-  //     }
-  //   }
-  // }
+  if(session?.user) {
+
+    if (!session?.idDatabase) {
+      return {
+        redirect: {
+          destination: '/database',
+          permanent: false,
+        }
+      }
+    }
+
+    return {
+      redirect: {
+        destination: '/app/dashboard',
+        permanent: false,
+      }
+    }
+  }
 
   return {
     props: {

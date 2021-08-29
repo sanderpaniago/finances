@@ -15,7 +15,7 @@ interface SummaryProps {
 
 export function Summary({resumer, isLoading}: SummaryProps) {
     return (
-        <SimpleGrid columns={3} spacing="4" mb='6'>
+        <SimpleGrid cflex='1' gap='4' minChildWidth='320px'  mb='6'>
             <Box h='10vh' bg="gray.800" borderRadius={8} p='4'>
                 <Box d='flex' justifyContent='space-between' w='full'>
                     <Text>Entradas 

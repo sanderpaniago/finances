@@ -10,16 +10,20 @@ type CreatePageData = {
     price: number;
 }
 
-const createPage = async (data: CreatePageData) => {
-    const response = await api.post('/api/transactions/', data)   
+const createPage = async (data: CreatePageData, idDatabase: string) => {
+    const response = await api.post('/api/transactions/', data, {
+        params: {
+            idDatabase
+        }
+    })   
     return response
     
 }
 
-export function useCreatePage() {
+export function useCreatePage(idDatabase: string) {
     const toast = useToast()
     return useMutation(async (data: CreatePageData) => { 
-        return createPage(data)
+        return createPage(data, idDatabase)
     }, {
         onSuccess: () => { 
             queryClient.invalidateQueries('transactions')

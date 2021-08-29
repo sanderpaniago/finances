@@ -1,53 +1,31 @@
+import { DatabasesQueryResponse } from "@notionhq/client/build/src/api-endpoints";
+import { Page } from "@notionhq/client/build/src/api-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { notion } from "../../services/notion";
+import { finalyFilter, initialFilter } from "./_lib/filters";
 
-function initialFilter(year, month) {
-    let filterYear;
-    let filterMonth;
-
-    switch (month) {
-        case 1:
-            filterMonth = 10;
-            filterYear = year - 1;
-            break;
-        case 2:
-            filterMonth = 11;
-            filterYear = year - 1;
-            break;
-        case 3:
-            filterMonth = 12;
-            filterYear = year - 1;
-        default:
-            filterMonth = month - 3;
-            filterYear = year;
-            break;
+interface ResultsNotion extends Page {
+    properties: {
+        dueDate: {
+            id: string;
+            type: 'date';
+            date: {
+                start: string;
+            };
+        };
+        price: {
+            id: string;
+            type: 'number';
+            number: number
+        };
+        category: {
+            id: string;
+            type: 'select';
+            select: {
+                name: string;
+            }
+        }
     }
-
-    return {
-        filterMonth,
-        filterYear,
-    };
-}
-
-function finalyFilter(year, month) {
-    let filterYear;
-    let filterMonth;
-
-    switch (month) {
-        case 12:
-            filterMonth = 1;
-            filterYear = year + 1;
-            break;
-        default:
-            filterMonth = month + 1;
-            filterYear = year;
-            break;
-    }
-
-    return {
-        filterMonth,
-        filterYear,
-    };
 }
 
 export default async function handle(
@@ -92,7 +70,7 @@ export default async function handle(
             },
         });
 
-        const results = response.results.reduce((acc, item) => {
+        const results = response.results.reduce((acc, item: ResultsNotion) => {
             const monthItem =
                 new Date(item.properties.dueDate.date.start).getMonth()
             const yearItem = new Date(item.properties.dueDate.date.start).getFullYear()

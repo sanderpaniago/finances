@@ -25,10 +25,10 @@ import { useResumer } from "../../../services/hooks/useResumer";
 import { formatter, formatterDate } from "../../../utils/formatted";
 import { Summary } from "../../../components/Sumarry";
 import { queryClient } from '../../../services/querryClient'
-import { useSession } from "next-auth/client";
+import { getSession, useSession } from "next-auth/client";
+import { GetServerSideProps } from "next";
 
-export default function Transactions() {
-    const [session] = useSession()
+export default function Transactions({idDatabase}) {
 
     const [filters, setFilter] = useState({
         currentYear: '',
@@ -46,7 +46,7 @@ export default function Transactions() {
                 after: pageParam,
                 currentYear: filters.currentYear,
                 currentMouth: filters.currentMouth,
-                idDatabase: session.idDatabase
+                idDatabase,
             },
         });
         return response.data;
@@ -68,7 +68,7 @@ export default function Transactions() {
         }
     });
 
-    const resumer = useResumer(filters, session?.idDatabase);
+    const resumer = useResumer(filters, idDatabase);
 
     const togglePay = useTogglePay()
 
@@ -171,11 +171,11 @@ export default function Transactions() {
                             <>
                                 <Box overflowX='hidden'>
                                     <HStack
-                                        w='full'
+                                        flex='1'
                                         pr='5'
                                     >
                                         <Box w='40%'>Transações</Box>
-                                        <Box w='30%'>Valor</Box>
+                                        <Box w='30%' textAlign={['center', 'left']} >Valor</Box>
                                         {isWideVersion && (
                                             <Box w='20%'>
                                                 <Menu colorScheme='blackAlpha'>
@@ -213,7 +213,11 @@ export default function Transactions() {
                                                 </Menu>
                                             </Box>
                                         )}
-                                        <Box w='10%' px={["4", "4", "6"]} color="gray.300" textAlign='left' >
+                                        <Box 
+                                            w={['auto','10%']} 
+                                            px={["4", "4", "6"]} 
+                                            color="gray.300" 
+                                            textAlign={['center' ,'left']} >
                                             Pago
                                         </Box>
                                     </HStack>
@@ -247,4 +251,33 @@ export default function Transactions() {
             </Flex>
         </Box>
     );
+}
+
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+    const session = await getSession({ req });
+
+    if (!session?.idDatabase) {
+        return {
+            redirect: {
+                destination: '/database',
+                permanent: false,
+            }
+        }
+    }
+
+    if (!session?.user) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
+
+    return {
+        props: {
+            idDatabase: session.idDatabase,
+        }
+    }
 }

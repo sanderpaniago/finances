@@ -1,59 +1,38 @@
 import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
-import { useSession } from "next-auth/client";
-import dynamic from 'next/dynamic'
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/client";
 import { useEffect, useState } from "react";
+import { Charts } from "../../components/Charts";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 import { useChart } from "../../services/hooks/useChart";
-import { theme } from '../../styles/theme'
 
-const Chart = dynamic(() => import('react-apexcharts'), {
-    ssr: false,
-})
 
-const options = {
-    chart: {
-        toolbar: {
-            show: false,
-        },
-        zoom: {
-            enabled: false,
-        },
-        foreColor: theme.colors.gray[500]
-    },
-    grid: {
-        show: false,
-    },
-    dataLabels: {
-        enabled: false,
-    },
-    tooltip: {
-        enabled: false,
-    },
-
-    fill: {
-        opacity: 0.3,
-        type: 'gradient',
-        gradient: {
-            shade: 'dark',
-            opacityFrom: 0.7,
-            opacityTo: 0.3,
-        }
-    }
+type CategoriesFilter = {
+    valueEntrada: number[];
+    category: string[];
+    valueSaidas: number[]
 }
 
 
-export default function Dashboard() {
-    const [session] = useSession()
-    const { data, isLoading } = useChart(session?.idDatabase)
-    const [categories, setCategories] = useState({})
+type ChartApiValue = {
+    entradas: number;
+    saidas: number
+}
+
+export default function Dashboard({ idDatabase }) {
+
+    const { data, isLoading } = useChart(idDatabase)
+
+    const [categories, setCategories] = useState<CategoriesFilter>({} as CategoriesFilter)
+
     useEffect(() => {
 
         if (data) {
             const category = Object.keys(data)
             const value = Object.values(data)
-            const valueEntrada = value.map(item => item.entradas)
-            const valueSaidas = value.map(item => (item.saidas * -1).toFixed(2))
+            const valueEntrada = value.map((item: ChartApiValue) => Number((item.entradas).toFixed(2)))
+            const valueSaidas = value.map((item: ChartApiValue) => Number((item.saidas * -1).toFixed(2)))
 
             setCategories({
                 category,
@@ -77,24 +56,12 @@ export default function Dashboard() {
                         borderRadius={8}
                         pb='4'
                     >
-                        <Text fontSize='lg' mb='4'>Inscritos da semana</Text>
-                        {!isLoading && (
-                            <Chart type='area' height={160} options={{
-                                ...options,
-                                xaxis: {
-                                    type: "datetime",
-                                    axisBorder: {
-                                        color: theme.colors.gray[600]
-                                    },
-                                    axisTicks: {
-                                        color: theme.colors.gray[600]
-                                    },
-                                    categories: categories.category,
-                                },
-                            }} series={[{
-                                name: 'series-1',
-                                data: categories.valueEntrada
-                            }]} />
+                        <Text fontSize='lg' mb='4'>Entradas</Text>
+                        {!isLoading && data && (
+                            <Charts
+                                categories={categories.category}
+                                series={categories.valueEntrada}
+                            />
                         )}
                     </Box>
                     <Box
@@ -103,24 +70,12 @@ export default function Dashboard() {
                         borderRadius={8}
                         pb='4'
                     >
-                        <Text fontSize='lg' mb='4'>Inscritos da semana</Text>
-                        {!isLoading && (
-                            <Chart type='area' height={160} options={{
-                                ...options,
-                                xaxis: {
-                                    type: "datetime",
-                                    axisBorder: {
-                                        color: theme.colors.gray[600]
-                                    },
-                                    axisTicks: {
-                                        color: theme.colors.gray[600]
-                                    },
-                                    categories: categories.category,
-                                },
-                            }} series={[{
-                                name: 'series-1',
-                                data: categories.valueSaidas
-                            }]} />
+                        <Text fontSize='lg' mb='4'>Saidas</Text>
+                        {!isLoading && data && (
+                            <Charts
+                                categories={categories.category}
+                                series={categories.valueSaidas}
+                            />
                         )}
                     </Box>
 
@@ -128,4 +83,32 @@ export default function Dashboard() {
             </Flex>
         </Flex>
     )
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+    const session = await getSession({ req });
+
+    if (!session?.idDatabase) {
+        return {
+            redirect: {
+                destination: '/database',
+                permanent: false,
+            }
+        }
+    }
+
+    if (!session?.user) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
+
+    return {
+        props: {
+            idDatabase: session.idDatabase,
+        }
+    }
 }

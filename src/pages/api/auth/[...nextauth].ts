@@ -3,6 +3,12 @@ import { query as q } from 'faunadb'
 import { fauna } from "../../../services/fauna";
 import Providers from "next-auth/providers";
 
+type UserData = {
+    data: {
+        idDatabase: string;
+    }
+}
+
 export default NextAuth({
     providers: [
         Providers.GitHub({
@@ -14,7 +20,7 @@ export default NextAuth({
     callbacks: {
         async session(session) {
             try {
-                const idDatabaseNotion = await fauna.query(
+                const idDatabaseNotion = await fauna.query<UserData>(
                     q.Get(
                         q.Match(
                             q.Index('user_by_email'),
@@ -22,7 +28,6 @@ export default NextAuth({
                         )
                     )
                 )
-                console.log(idDatabaseNotion)
                 if (idDatabaseNotion.data.idDatabase) {
                     return {
                         ...session,

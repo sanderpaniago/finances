@@ -10,6 +10,8 @@ import { RiArrowDownCircleLine, RiArrowUpCircleLine } from "react-icons/ri";
 import { useState } from "react";
 import { useCreatePage } from "../../../services/hooks/useCreatePage";
 import { queryClient } from "../../../services/querryClient";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/client";
 
 type CreateTransactionFormData = {
     title: string;
@@ -24,11 +26,11 @@ const createUserFormSchema = yup.object().shape({
     dueDate: yup.string().required(),
 })
 
-export default function CreateTransaction() {
+export default function CreateTransaction({idDatabase}) {
     const router = useRouter()
     const [category, setCategory] = useState('')
     
-    const {mutateAsync} = useCreatePage()
+    const {mutateAsync} = useCreatePage(idDatabase)
     
     const { register, handleSubmit, formState } = useForm({
         resolver: yupResolver(createUserFormSchema),
@@ -177,4 +179,32 @@ export default function CreateTransaction() {
         </Flex>
     </Box>
     )
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+    const session = await getSession({ req });
+
+    if (!session?.idDatabase) {
+        return {
+            redirect: {
+                destination: '/database',
+                permanent: false,
+            }
+        }
+    }
+
+    if (!session?.user) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
+
+    return {
+        props: {
+            idDatabase: session.idDatabase,
+        }
+    }
 }

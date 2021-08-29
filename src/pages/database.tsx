@@ -1,13 +1,12 @@
 import { Button, Flex, Heading, HStack, Input, Text } from "@chakra-ui/react";
-import { useSession } from "next-auth/client";
+import { getSession } from "next-auth/client";
 import { useState } from "react";
 import { api } from "../services/api";
 import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
 
 export default function Database() {
   const router = useRouter()
-  const [sesstion] = useSession()
-  console.log(sesstion)
 
   const [idDatabase, setIdDatabase] = useState('')
 
@@ -16,7 +15,7 @@ export default function Database() {
       idDatabase
     })
 
-    //router.push('/app/dashboard')
+    router.push('/app/dashboard')
   }
 
   return (
@@ -62,4 +61,32 @@ export default function Database() {
       </Flex>
     </Flex>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const session = await getSession({ req });
+
+  if (session?.idDatabase) {
+    return {
+      redirect: {
+        destination: '/app/dashboard',
+        permanent: false,
+      }
+    }
+  }
+
+  if (!session?.user) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      }
+    }
+  }
+
+  return {
+    props: {
+
+    }
+  }
 }
