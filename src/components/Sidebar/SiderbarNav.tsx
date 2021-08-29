@@ -11,10 +11,10 @@ export function SidebarNav() {
                 <NavLink href='/app/transactions' icon={RiMoneyDollarCircleLine}>Transações</NavLink>
             </NavSection>
 
-            <NavSection title='AUTOMAÇÃO'>
+            {/* <NavSection title='AUTOMAÇÃO'>
                 <NavLink href='/forms' icon={RiInputMethodLine} >Formulários</NavLink>
                 <NavLink href='/automation' icon={RiGitMergeLine} >Automação</NavLink>
-            </NavSection>
+            </NavSection> */}
         </Stack>
     )
 }
