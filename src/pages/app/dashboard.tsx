@@ -1,12 +1,15 @@
+import { useEffect, useMemo, useState } from "react";
 import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/client";
-import { useEffect, useState } from "react";
+
 import { Charts } from "../../components/Charts";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
-import { useChart } from "../../services/hooks/useChart";
 
+import client from "../../services/apollo-client";
+import GET_TRANSACTIONS from '../../graphql/getAllTransaction.gql'
+import { formatter, formatterDate } from "../../utils/formatted";
 
 type CategoriesFilter = {
     valueEntrada: number[];
@@ -15,33 +18,47 @@ type CategoriesFilter = {
 }
 
 
-type ChartApiValue = {
-    entradas: number;
-    saidas: number
+type Resumer = {
+    [key: string]: {
+        cashIn: number;
+        cashOut: number
+    }
 }
 
-export default function Dashboard({ idDatabase }) {
 
-    const { data, isLoading } = useChart(idDatabase)
+export default function Dashboard({ transactions }) {
 
-    const [categories, setCategories] = useState<CategoriesFilter>({} as CategoriesFilter)
-
-    useEffect(() => {
-
-        if (data) {
-            const category = Object.keys(data)
-            const value = Object.values(data)
-            const valueEntrada = value.map((item: ChartApiValue) => Number((item.entradas).toFixed(2)))
-            const valueSaidas = value.map((item: ChartApiValue) => Number((item.saidas * -1).toFixed(2)))
-
-            setCategories({
-                category,
-                valueEntrada,
-                valueSaidas
-            })
+    const resumer: Resumer = transactions.reduce((acc, item) => {
+        const [year, month] = item.dueDate.split('-')
+        if (!acc[`${year}/${month}`]) {
+            acc[`${year}/${month}`] = {
+                cashIn: 0,
+                cashOut: 0
+            }
         }
-    }, [data])
 
+        if (item.type === 'cash-in') {
+            acc[`${year}/${month}`].cashIn = acc[`${year}/${month}`].cashIn + item.price
+        } else {
+            acc[`${year}/${month}`].cashOut = acc[`${year}/${month}`].cashOut + item.price
+        }
+
+        return acc
+    }, {} as Resumer)
+
+    const dataResumer = Object.keys(resumer).map(item => {
+        const [year, month] = item.split('/')
+        const date = new Date(Number(year), Number(month) - 1, 1)
+        const formatDate = new Intl.DateTimeFormat('pt-br', {
+            month: 'short',
+            year: '2-digit',
+        }).format(date)
+        return formatDate
+    }).reverse()
+
+    const resumerCashIn = Object.values(resumer).map(item => Number(item.cashIn)).reverse()
+
+    const resumerCashOut = Object.values(resumer).map(item => Number(item.cashOut.toFixed(2))).reverse()
     return (
         <Flex direction="column" h='100vh'>
             <Header />
@@ -57,10 +74,10 @@ export default function Dashboard({ idDatabase }) {
                         pb='4'
                     >
                         <Text fontSize='lg' mb='4'>Entradas</Text>
-                        {!isLoading && data && (
+                        {transactions && (
                             <Charts
-                                categories={categories.category}
-                                series={categories.valueEntrada}
+                                categories={dataResumer}
+                                series={resumerCashIn}
                             />
                         )}
                     </Box>
@@ -71,10 +88,10 @@ export default function Dashboard({ idDatabase }) {
                         pb='4'
                     >
                         <Text fontSize='lg' mb='4'>Saidas</Text>
-                        {!isLoading && data && (
+                        {transactions && (
                             <Charts
-                                categories={categories.category}
-                                series={categories.valueSaidas}
+                                categories={dataResumer}
+                                series={resumerCashOut}
                             />
                         )}
                     </Box>
@@ -88,14 +105,6 @@ export default function Dashboard({ idDatabase }) {
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     const session = await getSession({ req });
 
-    if (!session?.idDatabase) {
-        return {
-            redirect: {
-                destination: '/database',
-                permanent: false,
-            }
-        }
-    }
 
     if (!session?.user) {
         return {
@@ -106,9 +115,30 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         }
     }
 
+    const { data } = await client.query({
+        query: GET_TRANSACTIONS,
+        variables: {
+            email: session.user.email
+        }
+    })
+    const transactions = data.userByEmail.transactions.data.map(transaction => {
+        const [year, month, day] = transaction.dueDate.split('-')
+        return {
+            id: transaction._id,
+            title: transaction.title,
+            price: transaction.price,
+            priceFormatted: formatter().format(transaction.price),
+            dueDateFormatted: formatterDate().format(new Date(year, month - 1, day)),
+            dueDate: transaction.dueDate,
+            category: transaction.category.name,
+            type: transaction.type.name,
+            pay: transaction.pay
+        }
+    })
+
     return {
         props: {
-            idDatabase: session.idDatabase,
+            transactions
         }
     }
 }

@@ -1,7 +1,7 @@
-import {GetServerSideProps} from 'next'
-import {Button, Flex, Heading, Icon, IconButton, Text} from '@chakra-ui/react'
+import { GetServerSideProps } from 'next'
+import { Button, Flex, Heading, Icon, IconButton, Text } from '@chakra-ui/react'
 import { getSession, signIn, useSession } from 'next-auth/client'
-import { RiGithubFill} from 'react-icons/ri'
+import { RiGithubFill } from 'react-icons/ri'
 export default function Home() {
 
   return (
@@ -16,14 +16,14 @@ export default function Home() {
         alignItems="center"
       >
         <Heading size='lg' mb='8'>Sign in.</Heading>
-        <Button 
+        <Button
           onClick={() => signIn('github')}
           colorScheme='blackAlpha'
           py='6'
           as="a"
           cursor='pointer'
         >
-          <IconButton 
+          <IconButton
             icon={<Icon as={RiGithubFill} />}
             fontSize="24"
             variant="unstyled"
@@ -38,20 +38,10 @@ export default function Home() {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({req}) => {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req });
 
-  if(session?.user) {
-
-    if (!session?.idDatabase) {
-      return {
-        redirect: {
-          destination: '/database',
-          permanent: false,
-        }
-      }
-    }
-
+  if (session?.user) {
     return {
       redirect: {
         destination: '/app/dashboard',

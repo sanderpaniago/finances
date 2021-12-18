@@ -16,12 +16,20 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "typeRoots": [
+      "node_modules/@types",
+      "src/@types"
+    ],
   },
+  "files": [
+    "src/@types/graphql.d.ts"
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "**/*.gql"
   ],
   "exclude": [
     "node_modules"

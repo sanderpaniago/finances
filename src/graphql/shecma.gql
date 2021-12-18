@@ -1,0 +1,34 @@
+type User {
+  email: String! @unique
+  firstName: String
+  lastName: String
+  transactions: [Transaction!] @relation
+}
+
+type Transaction {
+  title: String
+  price: Float
+  dueDate: String
+  category: Category @relation
+  pay: Boolean
+  type: Type! @relation
+  user: User!
+}
+
+type Category {
+  name: String!
+}
+
+type Type {
+  name: String!
+}
+
+
+type Query {
+  allUsers: [User!]
+  userByEmail(email: String!): User @index(name: "user_by_email")
+  transactionByUser(user: ID!): [Transaction] @index(name: "transaction_by_user")
+  allTransaction: [Transaction!]
+  allTypes: [Type!]
+  allCategories: [Category!]
+}

@@ -11,10 +11,6 @@ export default function Database() {
   const [idDatabase, setIdDatabase] = useState('')
 
   function handleCreateDatabaseNotion() {
-    api.post('/api/idDatabase', {
-      idDatabase
-    })
-
     router.push('/app/dashboard')
   }
 

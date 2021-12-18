@@ -1,13 +1,10 @@
 import NextAuth from "next-auth";
-import { query as q } from 'faunadb'
-import { fauna } from "../../../services/fauna";
 import Providers from "next-auth/providers";
+import client from "../../../services/apollo-client";
 
-type UserData = {
-    data: {
-        idDatabase: string;
-    }
-}
+import GET_USER_BY_EMAIL from '../../../graphql/getUserByEmail.gql'
+import CREATED_USER from '../../../graphql/createdUser.gql'
+
 
 export default NextAuth({
     providers: [
@@ -20,62 +17,48 @@ export default NextAuth({
     callbacks: {
         async session(session) {
             try {
-                const idDatabaseNotion = await fauna.query<UserData>(
-                    q.Get(
-                        q.Match(
-                            q.Index('user_by_email'),
-                            q.Casefold(session.user.email)
-                        )
-                    )
-                )
-                if (idDatabaseNotion.data.idDatabase) {
-                    return {
-                        ...session,
-                        idDatabase: idDatabaseNotion.data.idDatabase
+                const { data } = await client.query({
+                    query: GET_USER_BY_EMAIL,
+                    variables: {
+                        email: session.user.email
                     }
-                }
+                })
+
+                if (!data.userByEmail?._id)
+                    return session
+
                 return {
                     ...session,
-                    idDatabase: null
+                    userId: data.userByEmail._id
                 }
             } catch {
-                return {
-                    ...session,
-                    idDatabase: null
-                }
+                return session
             }
         },
         async signIn(user, account, profile) {
-            const { email } = user
-
+            const { email, name } = user
+            const [firstName, lastName] = name.split(' ')
             try {
-                await fauna.query(
-                    q.If(
-                        q.Not(
-                            q.Exists(
-                                q.Match(
-                                    q.Index('user_by_email'),
-                                    q.Casefold(email)
-                                )
-                            )
-                        ),
-                        q.Create(
-                            q.Collection('user'),
-                            {data: { email }}
-                        ),
-                        q.Get(
-                            q.Match(
-                                q.Match(
-                                    q.Index('user_by_email'),
-                                    q.Casefold(email)
-                                )
-                            )
-                        )
-                    )
-                )
-
+                const {data} = await client.query({
+                    query: GET_USER_BY_EMAIL,
+                    variables: {
+                        email
+                    }
+                })
+                if (data.userByEmail?.email)
+                    return true
+                
+                await client.mutate({
+                    mutation: CREATED_USER,
+                    variables: {
+                        email,
+                        firstName,
+                        lastName
+                    }
+                })   
+                
                 return true
-            } catch {
+            } catch(e) {
                 return false
             }
         }

@@ -1,0 +1,14 @@
+query {
+  allTypes {
+    data {
+      _id
+      name
+    }
+  }
+  allCategories {
+    data {
+      _id
+      name
+    }
+  }
+}

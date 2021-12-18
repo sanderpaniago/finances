@@ -10,12 +10,15 @@ import { Sidebar } from "../../../components/Sidebar";
 import { RiArrowDownCircleLine, RiArrowUpCircleLine } from "react-icons/ri";
 import { useState } from "react";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/client";
+import { getSession, useSession } from "next-auth/client";
 import client from "../../../services/apollo-client";
 import { useMutation } from "@apollo/client";
 
 import GET_TYPE_AND_CATEGORY from '../../../graphql/getTypesAndCategories.gql'
-import CREATE_TRANSACTION from '../../../graphql/createdTransaction.gql'
+import UPDATE_TRANSACTION from '../../../graphql/updateTransaction.gql'
+
+import GET_TRANSACTION from '../../../graphql/getTransactionById.gql'
+
 type CreateTransactionFormData = {
     title: string;
     price: number;
@@ -30,11 +33,12 @@ const createUserFormSchema = yup.object().shape({
     category: yup.string().required()
 })
 
-export default function CreateTransaction({ userId, categories, types }) {
+export default function CreateTransaction({ transaction, categories, types }) {
     const router = useRouter()
-    const [category, setCategory] = useState('')
+    const [category, setCategory] = useState(transaction.type.name)
+    const session = useSession()
 
-    const [createTransaction] = useMutation(CREATE_TRANSACTION)
+    const [updateTransaction] = useMutation(UPDATE_TRANSACTION)
 
     const { register, handleSubmit, formState } = useForm({
         resolver: yupResolver(createUserFormSchema),
@@ -44,13 +48,11 @@ export default function CreateTransaction({ userId, categories, types }) {
     const handleCreateUser: SubmitHandler<CreateTransactionFormData> = async (data) => {
         const categorySelected = types.find(item => item.name === category)
 
-        const isPayValid = new Date(data.dueDate).getTime() <= new Date().getTime()
-
-        const { errors } = await createTransaction({
+        const { errors } = await updateTransaction({
             variables: {
                 ...data,
-                userId,
-                pay: category === 'cash-in' && isPayValid,
+                transactionId: transaction.id,
+                pay: transaction.pay,
                 type: categorySelected.id
             }
         })
@@ -90,6 +92,7 @@ export default function CreateTransaction({ userId, categories, types }) {
                                 background: 'blackAlpha.200',
                             }}
                             h='14'
+                            defaultValue={transaction.title}
                             error={errors.name}
                             {...register('title')}
                         />
@@ -101,6 +104,7 @@ export default function CreateTransaction({ userId, categories, types }) {
                             placeholder='Valor'
                             variant="filled"
                             bg='blackAlpha.300'
+                            defaultValue={transaction.price}
                             _hover={{
                                 background: 'blackAlpha.200',
                             }}
@@ -118,6 +122,7 @@ export default function CreateTransaction({ userId, categories, types }) {
                                 background: 'blackAlpha.200',
                             }}
                             name='category'
+                            defaultValue={transaction.category.id}
                             error={errors.category}
                             {...register('category')}
                         >
@@ -131,13 +136,15 @@ export default function CreateTransaction({ userId, categories, types }) {
                         <Input
                             name='dueDate'
                             type='date'
-                            label='Senha'
+                            label='Data'
                             variant="filled"
                             bg='blackAlpha.300'
                             _hover={{
                                 background: 'blackAlpha.200',
                             }}
                             h='14'
+                            defaultValue={transaction.dueDate.split('/').join('-')}
+                            onChange={(e) => console.log(e)}
                             error={errors.password}
                             {...register('dueDate')}
                         />
@@ -216,8 +223,9 @@ export default function CreateTransaction({ userId, categories, types }) {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, params }) => {
     const session = await getSession({ req });
+    const { transactionId } = params
 
     if (!session?.user) {
         return {
@@ -231,6 +239,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     const { data } = await client.query({
         query: GET_TYPE_AND_CATEGORY,
     })
+
     const categories = data.allCategories.data.map(item => {
         return {
             id: item._id,
@@ -245,11 +254,34 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         }
     })
 
+    const { data: { findTransactionByID } } = await client.query({
+        query: GET_TRANSACTION,
+        variables: {
+            id: transactionId
+        }
+    })
+
+    const transaction = {
+        id: findTransactionByID._id,
+        title: findTransactionByID.title,
+        price: findTransactionByID.price,
+        pay: findTransactionByID.pay,
+        dueDate: findTransactionByID.dueDate,
+        category: {
+            id: findTransactionByID.category._id,
+            name: findTransactionByID.category.name
+        },
+        type: {
+            id: findTransactionByID.type._id,
+            name: findTransactionByID.type.name
+        }
+    }
+
     return {
         props: {
-            userId: session.userId,
             categories,
-            types
+            types,
+            transaction
         }
     }
 }

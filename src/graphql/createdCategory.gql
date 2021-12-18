@@ -1,0 +1,8 @@
+mutation createdCategory($name: String!) {
+  createCategory(data: {
+    name: $name
+  }) {
+    _id
+    name
+  }
+}

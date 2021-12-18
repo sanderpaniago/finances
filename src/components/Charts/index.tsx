@@ -1,11 +1,12 @@
 import dynamic from "next/dynamic"
 import { theme } from "../../styles/theme"
+import { formatter } from "../../utils/formatted"
 
 const Chart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
 })
 
-export function Charts({categories, series}) {
+export function Charts({ categories, series }) {
     return (
         <Chart type='area' height={160} options={{
             chart: {
@@ -36,8 +37,12 @@ export function Charts({categories, series}) {
                     opacityTo: 0.3,
                 }
             },
+            yaxis: {
+                labels: {
+                    formatter: (value) => formatter().format(value)
+                }
+            },
             xaxis: {
-                type: "datetime",
                 axisBorder: {
                     color: theme.colors.gray[600]
                 },
@@ -47,8 +52,8 @@ export function Charts({categories, series}) {
                 categories,
             },
         }} series={[{
-            name: 'trasação',
-            data: series,
+            name: "Transações",
+            data: series
         }]} />
     )
 }
