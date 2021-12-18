@@ -9,7 +9,6 @@ const httpLink = createHttpLink({
     uri: "https://graphql.fauna.com/graphql",
 })
 
-console.log(fromBase64(process.env.NEXT_PUBLIC_FAUNADB_KEY_GRAPHQL))
 
 const authLink = setContext((_, { headers }) => {
     return {

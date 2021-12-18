@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next'
 import { Button, Flex, Heading, Icon, IconButton, Text } from '@chakra-ui/react'
 import { getSession, signIn, useSession } from 'next-auth/client'
-import { RiGithubFill } from 'react-icons/ri'
+import { RiGithubFill, RiGoogleFill } from 'react-icons/ri'
 export default function Home() {
 
   return (
@@ -15,7 +15,7 @@ export default function Home() {
         flexDir="column"
         alignItems="center"
       >
-        <Heading size='lg' mb='8'>Sign in.</Heading>
+        <Heading display='flex' size='lg' mb='8'>Sign in <Text color='pink.500'>.</Text></Heading>
         <Button
           onClick={() => signIn('github')}
           colorScheme='blackAlpha'
@@ -31,6 +31,24 @@ export default function Home() {
           />
           <Text>
             Continue with Github
+          </Text>
+        </Button>
+        <Button
+          onClick={() => signIn('google')}
+          colorScheme='blackAlpha'
+          py='6'
+          mt='4'
+          as="a"
+          cursor='pointer'
+        >
+          <IconButton
+            icon={<Icon as={RiGoogleFill} />}
+            fontSize="24"
+            variant="unstyled"
+            aria-label='sign github'
+          />
+          <Text>
+            Continue with Google
           </Text>
         </Button>
       </Flex>

@@ -92,6 +92,10 @@ export default function Transactions({ transactions }) {
 
                 setTransactionListFilter(newList)
             }
+
+            if (filterActive === 'all') {
+                setTransactionListFilter(transactionList)
+            }
         }
     }, [dataActive, transactionList])
 
@@ -151,10 +155,12 @@ export default function Transactions({ transactions }) {
 
                                 <Select
                                     onChange={(e) => setDateActive(e.target.value)}
-                                    placeholder="Selecionar Mes"
                                     marginLeft={4}
                                     value={dataActive}
                                 >
+                                    <option value="all">
+                                        Selecionar Mes
+                                    </option>
                                     <option
                                         value="mes anterior"
                                     >

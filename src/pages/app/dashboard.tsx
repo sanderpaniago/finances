@@ -121,7 +121,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
             email: session.user.email
         }
     })
-    const transactions = data.userByEmail.transactions.data.map(transaction => {
+    const transactions = data.userByEmail?.transactions.data.map(transaction => {
         const [year, month, day] = transaction.dueDate.split('-')
         return {
             id: transaction._id,
