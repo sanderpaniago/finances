@@ -127,7 +127,7 @@ export default function CreateTransaction({ transaction, categories, types }) {
                             {...register('category')}
                         >
                             {categories?.map(item => (
-                                <option value={item.id}>
+                                <option value={item.id} key={item.id}>
                                     {item.name}
                                 </option>
                             ))}

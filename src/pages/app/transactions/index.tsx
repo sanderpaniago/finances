@@ -49,6 +49,50 @@ export default function Transactions({ transactions }) {
 
     useEffect(() => {
         filterMouth(dataActive)
+
+
+        function filterMouth(filterActive: DataActive) {
+            let initialDataFilter: Date
+            let finalDataFilter: Date
+            const currentDate = new Date()
+
+            if (filterActive === 'mes anterior') {
+                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0, 23, 59, 59)
+                const newList = transactionList.filter(item => {
+                    const [year, month, day] = item.dueDate.split('-')
+                    const transactionData = new Date(year, month - 1, day)
+                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
+                })
+                setTransactionListFilter(newList)
+                return
+            }
+            if (filterActive === 'mes atual') {
+                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59)
+
+                const newList = transactionList.filter(item => {
+                    const [year, month, day] = item.dueDate.split('-')
+                    const transactionData = new Date(year, month - 1, day)
+                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
+                })
+                setTransactionListFilter(newList)
+                return
+            }
+
+            if (filterActive === 'proximo mes') {
+                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59)
+
+                const newList = transactionList.filter(item => {
+                    const [year, month, day] = item.dueDate.split('-')
+                    const transactionData = new Date(year, month - 1, day)
+                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
+                })
+
+                setTransactionListFilter(newList)
+            }
+        }
     }, [dataActive, transactionList])
 
     const togglePay = async (pay: boolean, transactionId: string) => {
@@ -72,49 +116,6 @@ export default function Transactions({ transactions }) {
 
         const newList = transactionList.filter(item => item.id !== data.deleteTransaction._id)
         setTransactionList(newList)
-    }
-
-    function filterMouth(filterActive: DataActive) {
-        let initialDataFilter: Date
-        let finalDataFilter: Date
-        const currentDate = new Date()
-
-        if (filterActive === 'mes anterior') {
-            initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-            finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0, 23, 59, 59)
-            const newList = transactionList.filter(item => {
-                const [year, month, day] = item.dueDate.split('-')
-                const transactionData = new Date(year, month - 1, day)
-                return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-            })
-            setTransactionListFilter(newList)
-            return
-        }
-        if (filterActive === 'mes atual') {
-            initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-            finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59)
-
-            const newList = transactionList.filter(item => {
-                const [year, month, day] = item.dueDate.split('-')
-                const transactionData = new Date(year, month - 1, day)
-                return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-            })
-            setTransactionListFilter(newList)
-            return
-        }
-
-        if (filterActive === 'proximo mes') {
-            initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-            finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59)
-
-            const newList = transactionList.filter(item => {
-                const [year, month, day] = item.dueDate.split('-')
-                const transactionData = new Date(year, month - 1, day)
-                return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-            })
-
-            setTransactionListFilter(newList)
-        }
     }
 
     const resumer = transactionListFilter.reduce((acc, item) => {
