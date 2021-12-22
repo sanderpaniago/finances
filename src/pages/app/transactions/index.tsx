@@ -31,7 +31,7 @@ import GET_TRANSACTIONS from '../../../graphql/getAllTransaction.gql'
 import DELETE_TRANSACTION from '../../../graphql/deleteTransaction.gql'
 import UPDATE_PAYMENT from '../../../graphql/updatePayment.gql'
 
-type DataActive = 'mes anterior' | 'mes atual' | 'proximo mes' | string
+type DataActive = 'mes anterior' | 'mes atual' | 'proximo mes' | 'all'
 
 export default function Transactions({ transactions }) {
     const [dataActive, setDateActive] = useState<DataActive>('mes atual')
@@ -152,31 +152,6 @@ export default function Transactions({ transactions }) {
                                 <Heading size="lg" fontWeight="normal">
                                     Transações
                                 </Heading>
-
-                                <Select
-                                    onChange={(e) => setDateActive(e.target.value)}
-                                    marginLeft={4}
-                                    value={dataActive}
-                                >
-                                    <option value="all">
-                                        Selecionar Mes
-                                    </option>
-                                    <option
-                                        value="mes anterior"
-                                    >
-                                        Mês Passado
-                                    </option>
-                                    <option
-                                        value="mes atual"
-                                    >
-                                        Mês Atual
-                                    </option>
-                                    <option
-                                        value="proximo mes"
-                                    >
-                                        Próximo Mês
-                                    </option>
-                                </Select>
                             </Flex>
                             <NextLink href="/app/transactions/create">
                                 <Button
@@ -219,17 +194,22 @@ export default function Transactions({ transactions }) {
                                                 <MenuItem
                                                     _hover={{ bg: 'gray.900' }}
                                                     _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => { }}
+                                                    onClick={() => setDateActive('all')}
+                                                >Todos</MenuItem>
+                                                <MenuItem
+                                                    _hover={{ bg: 'gray.900' }}
+                                                    _focus={{ bg: 'gray.900' }}
+                                                    onClick={() => setDateActive('mes atual')}
                                                 >Mês atual</MenuItem>
                                                 <MenuItem
                                                     _hover={{ bg: 'gray.900' }}
                                                     _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => { }}
+                                                    onClick={() => setDateActive('mes anterior')}
                                                 >Mês passado</MenuItem>
                                                 <MenuItem
                                                     _hover={{ bg: 'gray.900' }}
                                                     _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => { }}
+                                                    onClick={() => setDateActive('proximo mes')}
                                                 >Proximo mês</MenuItem>
                                             </MenuList>
                                         </Menu>
