@@ -31,7 +31,7 @@ import GET_TRANSACTIONS from '../../../graphql/getAllTransaction.gql'
 import DELETE_TRANSACTION from '../../../graphql/deleteTransaction.gql'
 import UPDATE_PAYMENT from '../../../graphql/updatePayment.gql'
 
-type DataActive = 'mes anterior' | 'mes atual' | 'proximo mes' | 'all'
+type DataActive = 'mes anterior' | 'mes atual' | 'proximo mes' | 'todos'
 
 export default function Transactions({ transactions }) {
     const [dataActive, setDateActive] = useState<DataActive>('mes atual')
@@ -93,7 +93,7 @@ export default function Transactions({ transactions }) {
                 setTransactionListFilter(newList)
             }
 
-            if (filterActive === 'all') {
+            if (filterActive === 'todos') {
                 setTransactionListFilter(transactionList)
             }
         }
@@ -152,29 +152,9 @@ export default function Transactions({ transactions }) {
                                 <Heading size="lg" fontWeight="normal">
                                     Transações
                                 </Heading>
-                            </Flex>
-                            <NextLink href="/app/transactions/create">
-                                <Button
-                                    as="a"
-                                    size="sm"
-                                    fontSize="sm"
-                                    colorScheme="pink"
-                                    leftIcon={<Icon as={RiAddLine} fontSize="20" />}
-                                    cursor="pointer"
-                                >
-                                    Criar novo
-                                </Button>
-                            </NextLink>
-                        </Flex>
-                        <Box overflowX='hidden'>
-                            <HStack
-                                flex='1'
-                                pr='5'
-                            >
-                                <Box w='40%'>Transações</Box>
-                                <Box w='30%' textAlign={['center', 'left']} >Valor</Box>
                                 {isWideVersion && (
-                                    <Box w='20%'>
+
+                                    <Box ml={2}>
                                         <Menu colorScheme='blackAlpha'>
                                             <MenuButton
                                                 as={Button}
@@ -182,9 +162,12 @@ export default function Transactions({ transactions }) {
                                                 p='0'
                                                 colorScheme='transparent'
                                                 _focus={{ outline: 'none' }}
-
+                                                textTransform={'capitalize'}
+                                                borderWidth={1}
+                                                borderColor='whiteAlpha.200'
+                                                padding='0 15px'
                                             >
-                                                Vencimento
+                                                {dataActive}
                                             </MenuButton>
                                             <MenuList
                                                 zIndex='2'
@@ -194,7 +177,7 @@ export default function Transactions({ transactions }) {
                                                 <MenuItem
                                                     _hover={{ bg: 'gray.900' }}
                                                     _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => setDateActive('all')}
+                                                    onClick={() => setDateActive('todos')}
                                                 >Todos</MenuItem>
                                                 <MenuItem
                                                     _hover={{ bg: 'gray.900' }}
@@ -213,6 +196,78 @@ export default function Transactions({ transactions }) {
                                                 >Proximo mês</MenuItem>
                                             </MenuList>
                                         </Menu>
+                                    </Box>
+                                )}
+                            </Flex>
+                            <NextLink href="/app/transactions/create">
+                                <Button
+                                    as="a"
+                                    size="sm"
+                                    fontSize="sm"
+                                    colorScheme="pink"
+                                    leftIcon={<Icon as={RiAddLine} fontSize="20" />}
+                                    cursor="pointer"
+                                >
+                                    Criar novo
+                                </Button>
+                            </NextLink>
+                        </Flex>
+
+                        {!isWideVersion && (
+                            <Box mt={-4} mb={6}>
+                                <Menu colorScheme='blackAlpha'>
+                                    <MenuButton
+                                        as={Button}
+                                        rightIcon={<Icon as={RiArrowDownSLine} />}
+                                        p='0'
+                                        colorScheme='transparent'
+                                        _focus={{ outline: 'none' }}
+                                        textTransform={'capitalize'}
+                                        borderWidth={1}
+                                        borderColor='whiteAlpha.200'
+                                        padding='0 15px'
+                                    >
+                                        {dataActive}
+                                    </MenuButton>
+                                    <MenuList
+                                        zIndex='2'
+                                        bg='gray.800'
+                                        borderColor='gray.700'
+                                    >
+                                        <MenuItem
+                                            _hover={{ bg: 'gray.900' }}
+                                            _focus={{ bg: 'gray.900' }}
+                                            onClick={() => setDateActive('todos')}
+                                        >Todos</MenuItem>
+                                        <MenuItem
+                                            _hover={{ bg: 'gray.900' }}
+                                            _focus={{ bg: 'gray.900' }}
+                                            onClick={() => setDateActive('mes atual')}
+                                        >Mês atual</MenuItem>
+                                        <MenuItem
+                                            _hover={{ bg: 'gray.900' }}
+                                            _focus={{ bg: 'gray.900' }}
+                                            onClick={() => setDateActive('mes anterior')}
+                                        >Mês passado</MenuItem>
+                                        <MenuItem
+                                            _hover={{ bg: 'gray.900' }}
+                                            _focus={{ bg: 'gray.900' }}
+                                            onClick={() => setDateActive('proximo mes')}
+                                        >Proximo mês</MenuItem>
+                                    </MenuList>
+                                </Menu>
+                            </Box>
+                        )}
+                        <Box overflowX='hidden'>
+                            <HStack
+                                flex='1'
+                                pr='5'
+                            >
+                                <Box w='40%'>Transações</Box>
+                                <Box w='30%' textAlign={['center', 'left']} >Valor</Box>
+                                {isWideVersion && (
+                                    <Box w='20%'>
+                                        <Box textAlign={['center', 'left']} >Vencimento</Box>
                                     </Box>
                                 )}
                                 <Box
@@ -271,7 +326,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         query: GET_TRANSACTIONS,
         variables: {
             email: session.user.email
-        }
+        },
+        fetchPolicy: 'no-cache'
     })
     const transactions = data.userByEmail.transactions.data.map(transaction => {
         const [year, month, day] = transaction.dueDate.split('-')

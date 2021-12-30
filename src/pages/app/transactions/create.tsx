@@ -230,6 +230,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
     const { data } = await client.query({
         query: GET_TYPE_AND_CATEGORY,
+        fetchPolicy: 'no-cache'
     })
     const categories = data.allCategories.data.map(item => {
         return {

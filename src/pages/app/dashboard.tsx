@@ -45,20 +45,20 @@ export default function Dashboard({ transactions }) {
 
         return acc
     }, {} as Resumer)
-
-    const dataResumer = Object.keys(resumer).map(item => {
-        const [year, month] = item.split('/')
+    const dataSort = Object.entries(resumer).sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+    const dataResumer = dataSort.map(item => {
+        const [year, month] = item[0].split('/')
         const date = new Date(Number(year), Number(month) - 1, 1)
         const formatDate = new Intl.DateTimeFormat('pt-br', {
             month: 'short',
             year: '2-digit',
         }).format(date)
         return formatDate
-    }).reverse()
+    })
 
-    const resumerCashIn = Object.values(resumer).map(item => Number(item.cashIn)).reverse()
+    const resumerCashIn = dataSort.map(item => Number(item[1].cashIn))
 
-    const resumerCashOut = Object.values(resumer).map(item => Number(item.cashOut.toFixed(2))).reverse()
+    const resumerCashOut = dataSort.map(item => Number(item[1].cashOut.toFixed(2)))
     return (
         <Flex direction="column" h='100vh'>
             <Header />
