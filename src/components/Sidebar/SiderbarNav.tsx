@@ -1,7 +1,8 @@
 import { Stack } from "@chakra-ui/react";
-import { RiDashboardLine, RiMoneyDollarCircleLine, RiInputMethodLine, RiGitMergeLine } from "react-icons/ri";
+import { RiDashboardLine, RiMoneyDollarCircleLine, RiApps2Line, RiLogoutBoxLine } from "react-icons/ri";
 import { NavLink } from "./NavLink";
 import { NavSection } from "./NavSection";
+import { signOut } from 'next-auth/client'
 
 export function SidebarNav() {
     return (
@@ -11,10 +12,13 @@ export function SidebarNav() {
                 <NavLink href='/app/transactions' icon={RiMoneyDollarCircleLine}>Transações</NavLink>
             </NavSection>
 
-            {/* <NavSection title='AUTOMAÇÃO'>
-                <NavLink href='/forms' icon={RiInputMethodLine} >Formulários</NavLink>
-                <NavLink href='/automation' icon={RiGitMergeLine} >Automação</NavLink>
-            </NavSection> */}
+            <NavSection title='CONFIGURAÇÕES'>
+                <NavLink href='/app/categories' icon={RiApps2Line} >Categorias</NavLink>
+            </NavSection>
+
+            <NavSection title='PERFIL'>
+                <NavLink href='#!' onClick={() => signOut()} icon={RiLogoutBoxLine} >Sair</NavLink>
+            </NavSection>
         </Stack>
     )
 }
