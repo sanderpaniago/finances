@@ -46,6 +46,7 @@ export default function Transactions({ transactions }) {
         if (!route.query.f) {
             route.push({ pathname: route.pathname, query: { f: 'current' } })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -60,7 +61,7 @@ export default function Transactions({ transactions }) {
         if (route.query.f === 'after') {
             setFilterName('Próximo mês')
         }
-    }, [transactions])
+    }, [transactions, route.query.f])
 
     const isWideVersion = useBreakpointValue({
         base: false,
