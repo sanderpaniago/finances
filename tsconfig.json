@@ -19,11 +19,11 @@
     "jsx": "preserve",
     "typeRoots": [
       "node_modules/@types",
-      "src/@types"
+      "src/types"
     ],
   },
   "files": [
-    "src/@types/graphql.d.ts"
+    "src/types/graphql.d.ts"
   ],
   "include": [
     "next-env.d.ts",

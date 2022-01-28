@@ -1,8 +1,11 @@
-import { useMutation } from "@apollo/client";
+import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/client";
+import { Session } from "next-auth";
 import LinkNext from 'next/link'
+import { useMutation } from "@apollo/client";
 import { Box, Button, Divider, Flex, Heading, HStack, Input, Link, VStack } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useRouter } from "next/router";
 import * as yup from 'yup';
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -15,11 +18,17 @@ type CreateCategoryFormData = {
   name: string
 }
 
+type CreateCategoryProps = {
+  session: Session
+}
+
 const createUserFormSchema = yup.object().shape({
   name: yup.string().required()
 })
 
-export default function CreateCategory() {
+
+
+export default function CreateCategory({session}: CreateCategoryProps) {
   const router = useRouter()
   const [createCategory] = useMutation(CREATE_CATEGORY)
   const { register, handleSubmit, formState } = useForm({
@@ -31,7 +40,8 @@ export default function CreateCategory() {
     console.log(data)
     const { errors } = await createCategory({
       variables: {
-        name: data.name
+        name: data.name,
+        userId: session.userId
       }
     })
     if (errors)
@@ -90,4 +100,23 @@ export default function CreateCategory() {
       </Flex>
     </Box>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const session = await getSession({ req });
+
+  if (!session?.user) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      }
+    }
+  }
+
+  return {
+    props: {
+      session,
+    }
+  }
 }

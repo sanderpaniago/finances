@@ -14,7 +14,8 @@ import { getSession } from "next-auth/client";
 import client from "../../../services/apollo-client";
 import { useMutation } from "@apollo/client";
 
-import GET_TYPE_AND_CATEGORY from '../../../graphql/getTypesAndCategories.gql'
+import GET_TYPE from '../../../graphql/getTypes.gql'
+import GET_CATEGORY from '../../../graphql/getCategories.gql'
 import CREATE_TRANSACTION from '../../../graphql/createdTransaction.gql'
 type CreateTransactionFormData = {
     title: string;
@@ -229,10 +230,19 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     }
 
     const { data } = await client.query({
-        query: GET_TYPE_AND_CATEGORY,
+        query: GET_TYPE,
         fetchPolicy: 'no-cache'
     })
-    const categories = data.allCategories.data.map(item => {
+
+    const { data: dataCategories } = await client.query({
+        query: GET_CATEGORY,
+        fetchPolicy: 'no-cache',
+        variables: {
+            email: session.user.email
+        }
+    })
+
+    const categories = dataCategories.userByEmail.categories.data.map(item => {
         return {
             id: item._id,
             name: item.name

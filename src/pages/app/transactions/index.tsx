@@ -10,7 +10,7 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    Select,
+    Link,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import NextLink from "next/link";
@@ -30,14 +30,37 @@ import client from "../../../services/apollo-client";
 import GET_TRANSACTIONS from '../../../graphql/getAllTransaction.gql'
 import DELETE_TRANSACTION from '../../../graphql/deleteTransaction.gql'
 import UPDATE_PAYMENT from '../../../graphql/updatePayment.gql'
+import { filterMouth } from "../../../utils/filterMouth";
+import { useRouter } from "next/router";
 
-type DataActive = 'mes anterior' | 'mes atual' | 'proximo mes' | 'todos'
+type DataActive = 'before' | 'current' | 'after'
 
 export default function Transactions({ transactions }) {
-    const [dataActive, setDateActive] = useState<DataActive>('mes atual')
+
+    const route = useRouter()
 
     const [transactionList, setTransactionList] = useState(transactions)
-    const [transactionListFilter, setTransactionListFilter] = useState(transactionList)
+    const [filterName, setFilterName] = useState('Mês atual')
+
+    useEffect(() => {
+        if (!route.query.f) {
+            route.push({ pathname: route.pathname, query: { f: 'current' } })
+        }
+    }, [])
+
+    useEffect(() => {
+        setTransactionList(transactions)
+
+        if (route.query.f === 'current') {
+            setFilterName('Mês atual')
+        }
+        if (route.query.f === 'before') {
+            setFilterName('Mês passado')
+        }
+        if (route.query.f === 'after') {
+            setFilterName('Próximo mês')
+        }
+    }, [transactions])
 
     const isWideVersion = useBreakpointValue({
         base: false,
@@ -47,57 +70,6 @@ export default function Transactions({ transactions }) {
     const [deleteTransaction] = useMutation(DELETE_TRANSACTION)
     const [updatePayment] = useMutation(UPDATE_PAYMENT)
 
-    useEffect(() => {
-        filterMouth(dataActive)
-
-
-        function filterMouth(filterActive: DataActive) {
-            let initialDataFilter: Date
-            let finalDataFilter: Date
-            const currentDate = new Date()
-
-            if (filterActive === 'mes anterior') {
-                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0, 23, 59, 59)
-                const newList = transactionList.filter(item => {
-                    const [year, month, day] = item.dueDate.split('-')
-                    const transactionData = new Date(year, month - 1, day)
-                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-                })
-                setTransactionListFilter(newList)
-                return
-            }
-            if (filterActive === 'mes atual') {
-                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59)
-
-                const newList = transactionList.filter(item => {
-                    const [year, month, day] = item.dueDate.split('-')
-                    const transactionData = new Date(year, month - 1, day)
-                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-                })
-                setTransactionListFilter(newList)
-                return
-            }
-
-            if (filterActive === 'proximo mes') {
-                initialDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-                finalDataFilter = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59)
-
-                const newList = transactionList.filter(item => {
-                    const [year, month, day] = item.dueDate.split('-')
-                    const transactionData = new Date(year, month - 1, day)
-                    return transactionData.getTime() >= initialDataFilter.getTime() && transactionData.getTime() <= finalDataFilter.getTime()
-                })
-
-                setTransactionListFilter(newList)
-            }
-
-            if (filterActive === 'todos') {
-                setTransactionListFilter(transactionList)
-            }
-        }
-    }, [dataActive, transactionList])
 
     const togglePay = async (pay: boolean, transactionId: string) => {
         return await updatePayment({
@@ -122,7 +94,7 @@ export default function Transactions({ transactions }) {
         setTransactionList(newList)
     }
 
-    const resumer = transactionListFilter.reduce((acc, item) => {
+    const resumer = transactionList.reduce((acc, item) => {
         if (item.type === 'cash-in') {
             acc.cashIn += item.price
         } else {
@@ -138,10 +110,10 @@ export default function Transactions({ transactions }) {
         total: 0,
     })
 
+
     return (
         <Box>
             <Header />
-
             <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
                 <Sidebar />
                 <Box flex='1'>
@@ -167,33 +139,33 @@ export default function Transactions({ transactions }) {
                                                 borderColor='whiteAlpha.200'
                                                 padding='0 15px'
                                             >
-                                                {dataActive}
+                                                {filterName}
                                             </MenuButton>
                                             <MenuList
                                                 zIndex='2'
                                                 bg='gray.800'
                                                 borderColor='gray.700'
                                             >
-                                                <MenuItem
-                                                    _hover={{ bg: 'gray.900' }}
-                                                    _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => setDateActive('todos')}
-                                                >Todos</MenuItem>
-                                                <MenuItem
-                                                    _hover={{ bg: 'gray.900' }}
-                                                    _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => setDateActive('mes atual')}
-                                                >Mês atual</MenuItem>
-                                                <MenuItem
-                                                    _hover={{ bg: 'gray.900' }}
-                                                    _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => setDateActive('mes anterior')}
-                                                >Mês passado</MenuItem>
-                                                <MenuItem
-                                                    _hover={{ bg: 'gray.900' }}
-                                                    _focus={{ bg: 'gray.900' }}
-                                                    onClick={() => setDateActive('proximo mes')}
-                                                >Proximo mês</MenuItem>
+                                                <NextLink href={{ pathname: '/app/transactions', query: { f: 'before' } }}>
+                                                    <MenuItem
+                                                        as={Link}
+                                                        _hover={{ bg: 'gray.900' }}
+                                                        _focus={{ bg: 'gray.900' }}
+                                                    >Mês passado</MenuItem>
+                                                </NextLink>
+                                                <NextLink href={{ pathname: '/app/transactions', query: { f: 'current' } }}>
+                                                    <MenuItem
+                                                        as={Link}
+                                                        _hover={{ bg: 'gray.900' }}
+                                                        _focus={{ bg: 'gray.900' }}
+                                                    >Mês atual</MenuItem>
+                                                </NextLink>
+                                                <NextLink href={{ pathname: '/app/transactions', query: { f: 'after' } }}>
+                                                    <MenuItem
+                                                        _hover={{ bg: 'gray.900' }}
+                                                        _focus={{ bg: 'gray.900' }}
+                                                    >Proximo mês</MenuItem>
+                                                </NextLink>
                                             </MenuList>
                                         </Menu>
                                     </Box>
@@ -227,33 +199,33 @@ export default function Transactions({ transactions }) {
                                         borderColor='whiteAlpha.200'
                                         padding='0 15px'
                                     >
-                                        {dataActive}
+                                        {filterName}
                                     </MenuButton>
                                     <MenuList
                                         zIndex='2'
                                         bg='gray.800'
                                         borderColor='gray.700'
                                     >
-                                        <MenuItem
-                                            _hover={{ bg: 'gray.900' }}
-                                            _focus={{ bg: 'gray.900' }}
-                                            onClick={() => setDateActive('todos')}
-                                        >Todos</MenuItem>
-                                        <MenuItem
-                                            _hover={{ bg: 'gray.900' }}
-                                            _focus={{ bg: 'gray.900' }}
-                                            onClick={() => setDateActive('mes atual')}
-                                        >Mês atual</MenuItem>
-                                        <MenuItem
-                                            _hover={{ bg: 'gray.900' }}
-                                            _focus={{ bg: 'gray.900' }}
-                                            onClick={() => setDateActive('mes anterior')}
-                                        >Mês passado</MenuItem>
-                                        <MenuItem
-                                            _hover={{ bg: 'gray.900' }}
-                                            _focus={{ bg: 'gray.900' }}
-                                            onClick={() => setDateActive('proximo mes')}
-                                        >Proximo mês</MenuItem>
+                                        <NextLink href={{ pathname: '/app/transactions', query: { f: 'before' } }}>
+                                            <MenuItem
+                                                as={Link}
+                                                _hover={{ bg: 'gray.900' }}
+                                                _focus={{ bg: 'gray.900' }}
+                                            >Mês passado</MenuItem>
+                                        </NextLink>
+                                        <NextLink href={{ pathname: '/app/transactions', query: { f: 'currency' } }}>
+                                            <MenuItem
+                                                as={Link}
+                                                _hover={{ bg: 'gray.900' }}
+                                                _focus={{ bg: 'gray.900' }}
+                                            >Mês atual</MenuItem>
+                                        </NextLink>
+                                        <NextLink href={{ pathname: '/app/transactions', query: { f: 'after' } }}>
+                                            <MenuItem
+                                                _hover={{ bg: 'gray.900' }}
+                                                _focus={{ bg: 'gray.900' }}
+                                            >Proximo mês</MenuItem>
+                                        </NextLink>
                                     </MenuList>
                                 </Menu>
                             </Box>
@@ -279,16 +251,7 @@ export default function Transactions({ transactions }) {
                                 </Box>
                             </HStack>
                             <Box maxHeight="45vh" overflowY='scroll'>
-
-                                {dataActive ? transactionListFilter?.map((transaction) => (
-                                    <TableItem
-                                        key={transaction.id}
-                                        isWideVersion={isWideVersion}
-                                        item={transaction}
-                                        onTogglePay={togglePay}
-                                        handleDeleteTransaction={handleDeleteTransaction}
-                                    />
-                                )) : (
+                                {
                                     transactionList?.map((transaction) => (
                                         <TableItem
                                             key={transaction.id}
@@ -297,7 +260,7 @@ export default function Transactions({ transactions }) {
                                             onTogglePay={togglePay}
                                             handleDeleteTransaction={handleDeleteTransaction}
                                         />
-                                    )))
+                                    ))
                                 }
                             </Box>
                         </Box>
@@ -309,9 +272,10 @@ export default function Transactions({ transactions }) {
 }
 
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
     const session = await getSession({ req });
 
+    const filter = query.f as DataActive
 
     if (!session?.user) {
         return {
@@ -321,15 +285,18 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
             }
         }
     }
-
+    const { endData, initData } = filterMouth(filter ?? 'current')
     const { data } = await client.query({
         query: GET_TRANSACTIONS,
         variables: {
-            email: session.user.email
+            userId: session.userId,
+            initData,
+            endData,
         },
         fetchPolicy: 'no-cache'
     })
-    const transactions = data.userByEmail.transactions.data.map(transaction => {
+
+    const transactions = data.transactionByData.data.map(transaction => {
         const [year, month, day] = transaction.dueDate.split('-')
         return {
             id: transaction._id,
@@ -346,7 +313,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
     return {
         props: {
-            transactions
+            transactions,
         }
     }
 }

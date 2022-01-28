@@ -28,9 +28,9 @@ type Type {
 type Query {
   allUsers: [User!]
   userByEmail(email: String!): User @index(name: "user_by_email")
-  transactionByUser(user: ID!): [Transaction!]
-    @index(name: "transaction_by_user")
   allTransaction: [Transaction!]
   allTypes: [Type!]
   allCategories: [Category!]
+  transactionByData(userId: String!, initData: String!, endData: String!): [Transaction!] @resolver(name: "transactionsData", paginated: true)
+  categoriesByUser(userId: String!): [Category!] @resolver(name: "categoryByUser", paginated: true)
 }

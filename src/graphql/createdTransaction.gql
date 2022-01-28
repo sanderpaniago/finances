@@ -7,21 +7,17 @@ mutation createdTransaction(
   $type: ID
   $userId: ID!
 ) {
-  createTransaction(data: {
-    title: $title
-    price: $price
-    dueDate: $dueDate
-    pay: $pay
-    category: {
-      connect: $category
+  createTransaction(
+    data: {
+      title: $title
+      price: $price
+      dueDate: $dueDate
+      pay: $pay
+      category: { connect: $category }
+      type: { connect: $type }
+      user: { connect: $userId }
     }
-    type: {
-      connect: $type
-    }
-    user: {
-      connect: $userId
-    }
-  }) {
+  ) {
     _id
     title
     price

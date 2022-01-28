@@ -11,8 +11,9 @@ import { TableItemCategory } from "../../../components/Table/TableItemCategory";
 
 import client from "../../../services/apollo-client";
 
-import GET_TYPE_AND_CATEGORY from '../../../graphql/getTypesAndCategories.gql'
+import GET_CATEGORIES from '../../../graphql/getCategories.gql'
 import DELETE_CATEGORY from '../../../graphql/deleteCategory.gql'
+
 import { useState } from "react";
 
 export default function Categories({ categories }) {
@@ -92,10 +93,13 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   }
 
   const { data } = await client.query({
-    query: GET_TYPE_AND_CATEGORY,
+    query: GET_CATEGORIES,
+    variables: {
+      email: session.user.email
+    },
     fetchPolicy: 'no-cache'
   })
-  const categories = data.allCategories.data.map(item => {
+  const categories = data.userByEmail.categories.data.map(item => {
     return {
       id: item._id,
       name: item.name

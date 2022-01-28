@@ -8,7 +8,7 @@ import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 
 import client from "../../services/apollo-client";
-import GET_TRANSACTIONS from '../../graphql/getAllTransaction.gql'
+import GET_TRANSACTIONS from '../../graphql/getUserTransactions.gql'
 import { formatter, formatterDate } from "../../utils/formatted";
 
 type CategoriesFilter = {
