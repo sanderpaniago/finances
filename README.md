@@ -1,6 +1,6 @@
 # Finances [![GitHub stars](https://img.shields.io/github/stars/sanderpaniago/finances)](https://github.com/sanderpaniago/finances/stargazers) [![GitHub issues](https://img.shields.io/github/issues/sanderpaniago/finances)](https://github.com/sanderpaniago/finances/issues) [![GitHub stars](https://img.shields.io/github/stars/sanderpaniago/finances)](https://github.com/sanderpaniago/finances/stargazers)
 
-![Gravação de tela de 22-08-2021 12_32_51 (2)](https://user-images.githubusercontent.com/52095222/130363196-375d3c9e-6e5f-4d65-b69e-83e5264a6055.gif)
+![finances](https://user-images.githubusercontent.com/52095222/151472444-3106c570-dee0-44e1-9871-c4582b48d3c5.png)
 
 ## 🔬 Tecnologias
 
@@ -9,15 +9,11 @@ esse projeto foi desenvolvido com:
 - NextJs
 - Typescript
 - Chakra-ui
-- React Query;
-- React Hook Form;
-- ImgBB;
 - FaunaDB;
+- Apollo Graphql
 
 ## 💻 Projeto
-
-o Upfi é um repositório de images, onde pode cadastrar novas images e deixa-las publica.
-
+o finances é uma ferramenta para fazer o controle de ganho X gastos de mês. Tem como intuito treinar a utilizaçao de ferramentas externas para que não tenha a necessidade de desenvolver um backend para a aplicação. O controle de dados é feito via graphql faunaDB.
 ## 📝 Pré-requisitos:
 
 Você precisa do NodeJs e um gerenciador de dependências(NPM ou YARN) em sua maquina.
