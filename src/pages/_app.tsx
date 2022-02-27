@@ -8,12 +8,12 @@ import { theme } from "../styles/theme";
 import { queryClient } from "../services/querryClient";
 
 import { ApolloProvider } from "@apollo/client";
-import client from "../services/apollo-client";
+import clientApollo from "../services/apollo-client";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   return (
     <NextAuthProvider session={pageProps.session}>
-      <ApolloProvider client={client}>
+      <ApolloProvider client={clientApollo}>
         <QueryClientProvider client={queryClient}>
           <ChakraProvider theme={theme}>
             <SidebarDrawerProvider>
@@ -26,4 +26,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   )
 }
 
-export default MyApp
+export default App

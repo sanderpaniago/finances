@@ -18,10 +18,10 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
-const client = new ApolloClient({
+const clientApollo = new ApolloClient({
   ssrMode: true,
   link: authLink.concat(httpLink),
   cache: new InMemoryCache()
 })
 
-export default client
+export default clientApollo

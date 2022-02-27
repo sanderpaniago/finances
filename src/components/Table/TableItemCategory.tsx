@@ -1,6 +1,6 @@
 import { useState } from "react";
 import LinkNext from 'next/link'
-import { Box, Checkbox, Link, Text, StackProps, HStack, IconButton, Icon } from "@chakra-ui/react";
+import { Box, Link, Text, StackProps, HStack, IconButton, Icon } from "@chakra-ui/react";
 import { TiDocumentDelete } from 'react-icons/ti'
 import { motion, useMotionValue } from 'framer-motion'
 import { RiPencilLine } from "react-icons/ri";
@@ -20,7 +20,7 @@ interface TableItemCategoryProps {
 const MotionTr = motion<StackProps>(HStack)
 const MotionBox = motion(Box)
 
-export function TableItemCategory({ item, isWideVersion, handleDeleteCategory }: TableItemCategoryProps) {
+export function TableItemCategory({ item, handleDeleteCategory }: TableItemCategoryProps) {
   const x = useMotionValue(0)
   const [pose, setPose] = useState('visible')
 
@@ -53,13 +53,7 @@ export function TableItemCategory({ item, isWideVersion, handleDeleteCategory }:
             setPose('visible')
           }
         }}
-        onDragEnd={() => {
-          if (x.get() < -50) {
-            setPose('hidden')
-          } else {
-            setPose('visible')
-          }
-        }}
+        onDragEnd={() => setPose(x.get() < -50 ? 'hidden' : 'visible')}
         style={{ x }}
 
         w='full'

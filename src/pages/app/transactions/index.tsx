@@ -25,7 +25,7 @@ import { Header } from "../../../components/Header";
 import { TableItem } from "../../../components/Table/TableItem";
 
 import { formatter, formatterDate } from "../../../utils/formatted";
-import client from "../../../services/apollo-client";
+import clientApollo from "../../../services/apollo-client";
 
 import GET_TRANSACTIONS from '../../../graphql/getAllTransaction.gql'
 import DELETE_TRANSACTION from '../../../graphql/deleteTransaction.gql'
@@ -287,7 +287,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
         }
     }
     const { endData, initData } = filterMouth(filter ?? 'current')
-    const { data } = await client.query({
+    const { data } = await clientApollo.query({
         query: GET_TRANSACTIONS,
         variables: {
             userId: session.userId,

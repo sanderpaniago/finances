@@ -9,7 +9,7 @@ import { Header } from "../../../components/Header";
 import { Sidebar } from "../../../components/Sidebar";
 import { TableItemCategory } from "../../../components/Table/TableItemCategory";
 
-import client from "../../../services/apollo-client";
+import clientApollo from "../../../services/apollo-client";
 
 import GET_CATEGORIES from '../../../graphql/getCategories.gql'
 import DELETE_CATEGORY from '../../../graphql/deleteCategory.gql'
@@ -92,7 +92,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     }
   }
 
-  const { data } = await client.query({
+  const { data } = await clientApollo.query({
     query: GET_CATEGORIES,
     variables: {
       email: session.user.email

@@ -28,7 +28,7 @@ const createUserFormSchema = yup.object().shape({
 
 
 
-export default function CreateCategory({session}: CreateCategoryProps) {
+export default function CreateCategory({ session }: CreateCategoryProps) {
   const router = useRouter()
   const [createCategory] = useMutation(CREATE_CATEGORY)
   const { register, handleSubmit, formState } = useForm({
@@ -38,13 +38,13 @@ export default function CreateCategory({session}: CreateCategoryProps) {
 
   const handleCreateUser: SubmitHandler<CreateCategoryFormData> = async (data) => {
     console.log(data)
-    const { errors } = await createCategory({
+    const { errors: errorsCategory } = await createCategory({
       variables: {
         name: data.name,
         userId: session.userId
       }
     })
-    if (errors)
+    if (errorsCategory)
       return
 
     router.push('/app/categories')

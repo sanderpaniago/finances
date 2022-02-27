@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/client";
@@ -7,16 +6,9 @@ import { Charts } from "../../components/Charts";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 
-import client from "../../services/apollo-client";
+import clientApollo from "../../services/apollo-client";
 import GET_TRANSACTIONS from '../../graphql/getUserTransactions.gql'
 import { formatter, formatterDate } from "../../utils/formatted";
-
-type CategoriesFilter = {
-    valueEntrada: number[];
-    category: string[];
-    valueSaidas: number[]
-}
-
 
 type Resumer = {
     [key: string]: {
@@ -25,8 +17,22 @@ type Resumer = {
     }
 }
 
+type DashboardProps = {
+    transactions: Array<{
+        id: string
+        title: string
+        price: number
+        priceFormatted: string
+        dueDateFormatted: string
+        dueDate: string
+        category: string
+        type: string
+        pay: boolean
+    }>
+}
 
-export default function Dashboard({ transactions }) {
+
+export default function Dashboard({ transactions }: DashboardProps) {
 
     const resumer: Resumer = transactions.reduce((acc, item) => {
         const [year, month] = item.dueDate.split('-')
@@ -45,20 +51,22 @@ export default function Dashboard({ transactions }) {
 
         return acc
     }, {} as Resumer)
+
     const dataSort = Object.entries(resumer).sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+
     const dataResumer = dataSort.map(item => {
         const [year, month] = item[0].split('/')
         const date = new Date(Number(year), Number(month) - 1, 1)
-        const formatDate = new Intl.DateTimeFormat('pt-br', {
+        return new Intl.DateTimeFormat('pt-br', {
             month: 'short',
             year: '2-digit',
         }).format(date)
-        return formatDate
     })
 
     const resumerCashIn = dataSort.map(item => Number(item[1].cashIn))
 
     const resumerCashOut = dataSort.map(item => Number(item[1].cashOut.toFixed(2)))
+
     return (
         <Flex direction="column" h='100vh'>
             <Header />
@@ -115,7 +123,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         }
     }
 
-    const { data } = await client.query({
+    const { data } = await clientApollo.query({
         query: GET_TRANSACTIONS,
         variables: {
             email: session.user.email

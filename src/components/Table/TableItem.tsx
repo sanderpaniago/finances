@@ -39,7 +39,6 @@ export function TableItem({ item, onTogglePay, isWideVersion, handleDeleteTransa
             return
         }
         setIsChecked(!isChecked)
-        return;
     }
 
     async function handleDeletePage(transactionId: string) {
@@ -71,13 +70,7 @@ export function TableItem({ item, onTogglePay, isWideVersion, handleDeleteTransa
                         setPose('visible')
                     }
                 }}
-                onDragEnd={() => {
-                    if (x.get() < -50) {
-                        setPose('hidden')
-                    } else {
-                        setPose('visible')
-                    }
-                }}
+                onDragEnd={() => setPose(x.get() < -50 ? 'hidden' : 'visible')}
                 style={{ x }}
 
                 w='full'
