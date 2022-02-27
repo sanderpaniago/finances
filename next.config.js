@@ -1,6 +1,6 @@
 module.exports = {
   reactStrictMode: true,
-  webpack: (config, options) => {
+  webpack: config => {
     config.module.rules.push({
       test: /\.gql$/,
       exclude: /node_modules/,

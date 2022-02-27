@@ -10,8 +10,8 @@ import { Sidebar } from "../../../components/Sidebar";
 import { RiArrowDownCircleLine, RiArrowUpCircleLine } from "react-icons/ri";
 import { useState } from "react";
 import { GetServerSideProps } from "next";
-import { getSession, useSession } from "next-auth/client";
-import client from "../../../services/apollo-client";
+import { getSession } from "next-auth/client";
+import clientApollo from "../../../services/apollo-client";
 import { useMutation } from "@apollo/client";
 
 import GET_TYPE from '../../../graphql/getTypes.gql'
@@ -36,7 +36,6 @@ const createUserFormSchema = yup.object().shape({
 export default function CreateTransaction({ transaction, categories, types }) {
     const router = useRouter()
     const [category, setCategory] = useState(transaction.type.name)
-    const session = useSession()
 
     const [updateTransaction] = useMutation(UPDATE_TRANSACTION)
 
@@ -48,7 +47,7 @@ export default function CreateTransaction({ transaction, categories, types }) {
     const handleCreateUser: SubmitHandler<CreateTransactionFormData> = async (data) => {
         const categorySelected = types.find(item => item.name === category)
 
-        const { errors } = await updateTransaction({
+        const { errors: errorsTransaction } = await updateTransaction({
             variables: {
                 ...data,
                 transactionId: transaction.id,
@@ -57,7 +56,7 @@ export default function CreateTransaction({ transaction, categories, types }) {
             }
         })
 
-        if (errors)
+        if (errorsTransaction)
             return
 
         router.push('/app/transactions')
@@ -236,12 +235,12 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
         }
     }
 
-    const { data } = await client.query({
+    const { data } = await clientApollo.query({
         query: GET_TYPE,
         fetchPolicy: 'no-cache',
     })
 
-    const { data: dataCategories } = await client.query({
+    const { data: dataCategories } = await clientApollo.query({
         query: GET_CATEGORY,
         fetchPolicy: 'no-cache',
         variables: {
@@ -256,14 +255,12 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
         }
     })
 
-    const types = data.allTypes.data.map(item => {
-        return {
-            id: item._id,
-            name: item.name
-        }
-    })
+    const types = data.allTypes.data.map(item => ({
+        id: item._id,
+        name: item.name
+    }))
 
-    const { data: { findTransactionByID } } = await client.query({
+    const { data: { findTransactionByID } } = await clientApollo.query({
         query: GET_TRANSACTION,
         variables: {
             id: transactionId

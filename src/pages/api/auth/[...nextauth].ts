@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth'
 import Providers from 'next-auth/providers'
-import client from '../../../services/apollo-client'
+import clientApollo from '../../../services/apollo-client'
 
 import GET_USER_BY_EMAIL from '../../../graphql/getUserByEmail.gql'
 import CREATED_USER from '../../../graphql/createdUser.gql'
@@ -20,7 +20,7 @@ export default NextAuth({
   callbacks: {
     async session(session) {
       try {
-        const { data } = await client.query({
+        const { data } = await clientApollo.query({
           query: GET_USER_BY_EMAIL,
           variables: {
             email: session.user.email
@@ -37,14 +37,14 @@ export default NextAuth({
         return session
       }
     },
-    async signIn(user, account, profile) {
+    async signIn(user) {
       const { email, name } = user
       const [firstName, lastName] = name.split(' ')
       try {
         if (!email) {
           return '/auth/error?emailGitHubNotFound=true&gitError=true'
         }
-        const { data } = await client.query({
+        const { data } = await clientApollo.query({
           query: GET_USER_BY_EMAIL,
           variables: {
             email
@@ -52,7 +52,7 @@ export default NextAuth({
         })
         if (data.userByEmail?.email) return true
 
-        await client.mutate({
+        await clientApollo.mutate({
           mutation: CREATED_USER,
           variables: {
             email,

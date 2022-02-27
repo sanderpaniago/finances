@@ -11,7 +11,7 @@ import { RiArrowDownCircleLine, RiArrowUpCircleLine } from "react-icons/ri";
 import { useState } from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/client";
-import client from "../../../services/apollo-client";
+import clientApollo from "../../../services/apollo-client";
 import { useMutation } from "@apollo/client";
 
 import GET_TYPE from '../../../graphql/getTypes.gql'
@@ -47,7 +47,7 @@ export default function CreateTransaction({ userId, categories, types }) {
 
         const isPayValid = new Date(data.dueDate).getTime() <= new Date().getTime()
 
-        const { errors } = await createTransaction({
+        const { errors: errorsTransaction } = await createTransaction({
             variables: {
                 ...data,
                 userId,
@@ -56,7 +56,7 @@ export default function CreateTransaction({ userId, categories, types }) {
             }
         })
 
-        if (errors)
+        if (errorsTransaction)
             return
 
         router.push('/app/transactions')
@@ -229,12 +229,12 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         }
     }
 
-    const { data } = await client.query({
+    const { data } = await clientApollo.query({
         query: GET_TYPE,
         fetchPolicy: 'no-cache'
     })
 
-    const { data: dataCategories } = await client.query({
+    const { data: dataCategories } = await clientApollo.query({
         query: GET_CATEGORY,
         fetchPolicy: 'no-cache',
         variables: {
@@ -249,12 +249,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
         }
     })
 
-    const types = data.allTypes.data.map(item => {
-        return {
-            id: item._id,
-            name: item.name
-        }
-    })
+    const types = data.allTypes.data.map(item => ({
+        id: item._id,
+        name: item.name
+    }))
 
     return {
         props: {

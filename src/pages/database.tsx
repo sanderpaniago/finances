@@ -1,7 +1,6 @@
 import { Button, Flex, Heading, HStack, Input, Text } from "@chakra-ui/react";
 import { getSession } from "next-auth/client";
 import { useState } from "react";
-import { api } from "../services/api";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 
